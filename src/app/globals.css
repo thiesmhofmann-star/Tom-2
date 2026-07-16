@@ -1,0 +1,40 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+
+@keyframes tom-spin { to { transform: rotate(360deg); } }
+@keyframes tom-pulse { 0%, 100% { opacity: .45; } 50% { opacity: .9; } }
+
+.tom-dark {
+  --t-canvas:#0F0D18;--t-deep:#08070D;--t-surface:#15121F;--t-surface2:#1B1728;--t-hover:#221D33;--t-side:#0B0A12;
+  --t-border:rgba(255,255,255,0.08);--t-border2:rgba(255,255,255,0.13);--t-baccent:rgba(124,58,237,0.5);
+  --t-text:#FFFFFF;--t-text2:#B7AFD1;--t-muted:#8A82A6;--t-faint:#5E5878;
+  --t-fakt-bg:rgba(52,211,153,0.14);--t-fakt-fg:#4ADEA9;--t-signal-bg:rgba(251,191,36,0.14);--t-signal-fg:#FBBF24;
+  --t-accent:#7C3AED;--t-accent-soft:rgba(124,58,237,0.16);--t-accent-fg:#C4A8F8;
+  --t-shadow:0 1px 2px rgba(5,4,9,0.4),0 8px 24px rgba(5,4,9,0.28);
+  --t-glow:0 16px 44px rgba(76,40,160,0.24);
+  --t-hero:radial-gradient(ellipse 70% 75% at 12% 0%,rgba(124,58,237,0.24),rgba(15,13,24,0) 68%);
+}
+.tom-light {
+  --t-canvas:#F1EFF7;--t-deep:#E7E4F1;--t-surface:#FFFFFF;--t-surface2:#F6F4FE;--t-hover:#F1EFF7;--t-side:#FBFAFF;
+  --t-border:#E4E3EE;--t-border2:#D9D7E6;--t-baccent:rgba(124,58,237,0.4);
+  --t-text:#1A1A2E;--t-text2:#4D5468;--t-muted:#8A90A0;--t-faint:#A8ABB8;
+  --t-fakt-bg:#E8F7EE;--t-fakt-fg:#15803D;--t-signal-bg:#FBF1DC;--t-signal-fg:#B45309;
+  --t-accent:#7C3AED;--t-accent-soft:#EDE8FD;--t-accent-fg:#6D28D9;
+  --t-shadow:0 1px 2px rgba(26,26,46,0.04),0 6px 18px rgba(26,26,46,0.09);
+  --t-glow:0 12px 32px rgba(124,58,237,0.16);
+  --t-hero:radial-gradient(ellipse 70% 75% at 12% 0%,rgba(124,58,237,0.13),rgba(255,255,255,0) 68%);
+}
+
+.tom-dark input,.tom-dark textarea,.tom-light input,.tom-light textarea { background:var(--t-surface2); color:var(--t-text); outline:none; }
+.tom-dark input::placeholder,.tom-dark textarea::placeholder,.tom-light input::placeholder,.tom-light textarea::placeholder { color:var(--t-faint); }
+.tom-dark input:focus,.tom-dark textarea:focus,.tom-light input:focus,.tom-light textarea:focus { border-color:var(--t-baccent); }
+.tom-dark a,.tom-light a { color:var(--t-accent-fg); text-decoration:none; }
+.tom-btnP { transition:filter .12s cubic-bezier(.4,0,.2,1),transform .12s cubic-bezier(.4,0,.2,1); }
+.tom-btnP:hover { filter:brightness(1.12); }
+.tom-btnP:active { transform:scale(.97); }
