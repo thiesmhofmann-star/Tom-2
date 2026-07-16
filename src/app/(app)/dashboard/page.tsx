@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { C, FONT } from "@/lib/tokens";
-import { storeGet } from "@/lib/store";
+import { storeGet, currentUserId } from "@/lib/store";
 import { MODULES } from "@/lib/profile";
 import type { Profile } from "@/types";
 
@@ -37,6 +37,9 @@ export default function DashboardPage() {
 
   useEffect(() => {
     (async () => {
+      // Ohne Session gar nicht erst ins Onboarding schleifen → zur Anmeldung
+      const uid = await currentUserId();
+      if (!uid) { router.push("/auth/login?next=/dashboard"); return; }
       const p = await storeGet<Profile>("mki:profile");
       if (!p) { router.push("/onboarding"); return; }
       setProfile(p);

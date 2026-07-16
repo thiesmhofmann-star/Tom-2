@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Search, ArrowRight, Sparkles } from "lucide-react";
 import { C, FONT } from "@/lib/tokens";
-import { storeSet } from "@/lib/store";
+import { storeSet, currentUserId } from "@/lib/store";
 import { llmJSON } from "@/lib/llm";
 import { computeProfile, gearMeans } from "@/lib/profile";
 import type { Profile } from "@/types";
@@ -39,6 +39,11 @@ export default function OnboardingPage() {
   }
 
   async function finish() {
+    setErr("");
+    // Ohne aktive Session kann nichts gespeichert werden → zur Anmeldung
+    const uid = await currentUserId();
+    if (!uid) { router.push("/auth/login?next=/onboarding"); return; }
+
     const { modules, reasons } = computeProfile(a);
     const profile: Profile = {
       schemaVersion: 1, ...research,
@@ -49,8 +54,16 @@ export default function OnboardingPage() {
       gear: a.gear, gearOther: a.gearOther, presenter: a.presenter, editing: a.editing,
       modules: modules as Profile["modules"], reasons,
     };
-    await storeSet("mki:profile", profile);
-    router.push("/dashboard");
+    setBusy(true);
+    try {
+      const ok = await storeSet("mki:profile", profile);
+      if (!ok) { setErr("Konnte nicht speichern — die Anmeldung ist abgelaufen. Bitte neu anmelden."); setBusy(false); return; }
+      router.push("/dashboard");
+    } catch (e) {
+      // Echter DB-Fehler (häufigste Ursache: SQL-Migration nicht ausgeführt)
+      setErr("Speichern fehlgeschlagen: " + (e instanceof Error ? e.message : "unbekannter Fehler") + " — läuft die Datenbank-Migration (001_init.sql) im Supabase-Projekt?");
+      setBusy(false);
+    }
   }
 
   const head = (t: string, sub?: string) => (
@@ -128,7 +141,8 @@ export default function OnboardingPage() {
         {["Mehr Reichweite", "Mehr Leads", "Markenaufbau", "Mehr Umsatz"].map(g => (
           <button key={g} onClick={() => set("goal", g)} style={{ display: "block", width: "100%", textAlign: "left", background: a.goal === g ? C.accentSoft : C.card, border: `1px solid ${a.goal === g ? C.accent : C.line}`, borderRadius: 12, padding: "14px 16px", marginBottom: 10, cursor: "pointer", fontSize: 15, fontWeight: 600, color: C.ink, fontFamily: FONT }}>{g}</button>
         ))}
-        <div style={{ marginTop: 14 }}><Btn onClick={finish} disabled={!a.goal}><Sparkles size={15} /> Profil erstellen</Btn></div>
+        {err && <p style={{ fontSize: 13, color: C.signalFg, background: C.signalBg, padding: "8px 12px", borderRadius: 8, marginTop: 8 }}>{err}</p>}
+        <div style={{ marginTop: 14 }}><Btn onClick={finish} disabled={!a.goal || busy} loading={busy}><Sparkles size={15} /> {busy ? "Speichere …" : "Profil erstellen"}</Btn></div>
       </>)}
     </div>
   );
