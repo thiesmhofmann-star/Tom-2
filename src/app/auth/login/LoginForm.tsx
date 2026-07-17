@@ -34,7 +34,10 @@ export default function LoginForm() {
         <h1 style={{ margin: "0 0 6px", fontSize: 20, fontWeight: 700 }}>Anmelden</h1>
         <p style={{ margin: "0 0 20px", fontSize: 13.5, color: C.inkSoft }}>Kein Konto? <Link href="/auth/signup" style={{ color: C.accent, fontWeight: 600 }}>Registrieren →</Link></p>
         <input type="email" value={email} onChange={e => setEmail(e.target.value)} onKeyDown={e => e.key === "Enter" && !busy && login()} placeholder="E-Mail" style={inp} autoFocus />
-        <input type="password" value={password} onChange={e => setPassword(e.target.value)} onKeyDown={e => e.key === "Enter" && !busy && login()} placeholder="Passwort" style={{ ...inp, marginBottom: 16 }} />
+        <input type="password" value={password} onChange={e => setPassword(e.target.value)} onKeyDown={e => e.key === "Enter" && !busy && login()} placeholder="Passwort" style={{ ...inp, marginBottom: 8 }} />
+        <div style={{ textAlign: "right", marginBottom: 16 }}>
+          <Link href="/auth/passwort-vergessen" style={{ color: C.inkSoft, fontSize: 12.5, fontWeight: 600 }}>Passwort vergessen?</Link>
+        </div>
         {err && <p style={{ fontSize: 13, color: C.signalFg, background: C.signalBg, padding: "8px 12px", borderRadius: 8, marginBottom: 12 }}>{err}</p>}
         <Btn onClick={login} disabled={busy} loading={busy}>{busy ? "Anmelden …" : "Anmelden"}</Btn>
       </div>

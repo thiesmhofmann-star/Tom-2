@@ -31,6 +31,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [chain, setChain] = useState<Record<string, boolean>>({});
   const [email, setEmail] = useState("");
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  // Bei jedem Seitenwechsel das mobile Menü schließen
+  useEffect(() => { setMobileOpen(false); }, [pathname]);
 
   useEffect(() => { setTheme(getThemeLocal()); }, []);
   useEffect(() => {
@@ -63,8 +67,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <div className={"tom-" + theme} style={{ fontFamily: FONT, color: C.ink, background: C.deep, minHeight: "100%" }}>
       <div style={{ display: "flex", minHeight: "100vh", background: C.paper }}>
+        {/* Overlay hinter der mobilen Sidebar */}
+        <div className={"tom-overlay" + (mobileOpen ? " show" : "")} onClick={() => setMobileOpen(false)} />
         {/* Sidebar */}
-        <aside style={{ width: 250, flexShrink: 0, background: C.side, borderRight: `1px solid ${C.line}`, padding: "22px 15px", display: "flex", flexDirection: "column", position: "sticky", top: 0, height: "100vh", boxSizing: "border-box" }}>
+        <aside className={"tom-sidebar" + (mobileOpen ? " open" : "")} style={{ background: C.side, borderRight: `1px solid ${C.line}`, padding: "22px 15px", display: "flex", flexDirection: "column", boxSizing: "border-box" }}>
           <button onClick={() => router.push("/dashboard")} style={{ display: "flex", alignItems: "center", gap: 10, padding: "0 8px 20px", cursor: "pointer", background: "transparent", border: "none", fontFamily: FONT, textAlign: "left" }}>
             <Logo size={34} />
             <span>
@@ -93,12 +99,19 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <div style={{ marginTop: "auto", paddingTop: 14, borderTop: `1px solid ${C.line}` }}>
             <button onClick={() => router.push("/einstellungen/produktion")} style={{ display: "block", width: "100%", textAlign: "left", padding: "10px 11px", borderRadius: 10, fontSize: 13, color: C.inkSoft, cursor: "pointer", background: pathname === "/einstellungen/produktion" ? C.accentSoft : "transparent", border: "none", fontFamily: FONT }}>Produktion bearbeiten</button>
             <button onClick={reset} style={{ display: "block", width: "100%", textAlign: "left", padding: "10px 11px", borderRadius: 10, fontSize: 13, color: C.inkMuted, cursor: "pointer", background: "transparent", border: "none", fontFamily: FONT }}>Neu einrichten</button>
+            <div style={{ display: "flex", gap: 12, padding: "10px 11px 0" }}>
+              <a href="/impressum" style={{ fontSize: 11.5, color: C.faint, fontWeight: 600 }}>Impressum</a>
+              <a href="/datenschutz" style={{ fontSize: 11.5, color: C.faint, fontWeight: 600 }}>Datenschutz</a>
+            </div>
           </div>
         </aside>
 
         {/* Hauptbereich */}
         <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 14, padding: "16px 30px", borderBottom: `1px solid ${C.line}`, background: C.paper, position: "sticky", top: 0, zIndex: 5 }}>
+          <div className="tom-topbar" style={{ display: "flex", alignItems: "center", gap: 14, padding: "16px 30px", borderBottom: `1px solid ${C.line}`, background: C.paper, position: "sticky", top: 0, zIndex: 5 }}>
+            <button className="tom-hamburger" onClick={() => setMobileOpen(true)} aria-label="Menü öffnen" style={{ background: "transparent", border: `1px solid ${C.line}`, borderRadius: 9, cursor: "pointer", padding: "7px 9px", color: C.ink, alignItems: "center", justifyContent: "center" }}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M3 6h18M3 12h18M3 18h18" /></svg>
+            </button>
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase", color: C.inkMuted, fontWeight: 700 }}>{head[0]}</div>
               <div style={{ fontSize: 19, fontWeight: 800, letterSpacing: "-0.02em", color: C.ink }}>{head[1]}</div>
@@ -110,7 +123,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <button onClick={signOut} title={email} style={{ background: "transparent", border: `1px solid ${C.line}`, color: C.inkSoft, fontSize: 12, fontWeight: 600, padding: "6px 11px", borderRadius: 999, cursor: "pointer", fontFamily: FONT }}>Abmelden</button>
             )}
           </div>
-          <div style={{ flex: 1, padding: "28px 30px 48px", background: C.paper, overflowX: "hidden" }}>
+          <div className="tom-content" style={{ flex: 1, padding: "28px 30px 48px", background: C.paper, overflowX: "hidden" }}>
             <div style={{ maxWidth: 900, margin: "0 auto" }}>{children}</div>
           </div>
         </div>

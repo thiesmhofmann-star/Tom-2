@@ -1,7 +1,12 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { NextResponse } from "next/server";
+import { getServerClient } from "@/lib/supabase/server";
 
 const MODEL = "claude-sonnet-4-6";
+
+// Limits pro angemeldetem Nutzer
+const MAX_PER_MINUTE = 15;   // fängt Endlosschleifen ab
+const MAX_PER_DAY = 300;     // schützt vor langsamem Leerlaufen des Guthabens
 
 let _client: Anthropic | null = null;
 function getClient(): Anthropic {
@@ -17,10 +22,55 @@ function extractJSON(text: string): unknown {
   try { return JSON.parse(t.slice(start)); } catch { return null; }
 }
 
+/**
+ * Prüft das Nutzungslimit (best effort). Läuft die Tabelle api_usage noch nicht
+ * (Migration 002 nicht ausgeführt), wird durchgelassen statt die App zu blockieren.
+ * Gibt eine Fehlermeldung zurück, wenn das Limit erreicht ist, sonst null.
+ */
+async function checkRateLimit(
+  supabase: ReturnType<typeof getServerClient>, userId: string
+): Promise<string | null> {
+  try {
+    const since = new Date(Date.now() - 24 * 3600 * 1000).toISOString();
+    const { data, error } = await supabase
+      .from("api_usage").select("created_at").eq("user_id", userId).gte("created_at", since);
+    if (error) return null; // z. B. Tabelle fehlt → Limit überspringen, nicht blockieren
+
+    const now = Date.now();
+    const rows = data ?? [];
+    const lastMinute = rows.filter((r) => now - new Date(r.created_at).getTime() < 60_000).length;
+    if (lastMinute >= MAX_PER_MINUTE) return "Zu viele Anfragen in kurzer Zeit. Bitte einen Moment warten.";
+    if (rows.length >= MAX_PER_DAY) return "Tageslimit erreicht. Bitte morgen weitermachen oder das Limit anpassen.";
+
+    // diesen Aufruf zählen + alte Zeilen (>24h) aufräumen, damit die Tabelle klein bleibt
+    await supabase.from("api_usage").insert({ user_id: userId });
+    await supabase.from("api_usage").delete().eq("user_id", userId).lt("created_at", since);
+    return null;
+  } catch {
+    return null; // im Zweifel durchlassen statt legitime Nutzer auszusperren
+  }
+}
+
 export async function POST(req: Request) {
   if (!process.env.ANTHROPIC_API_KEY) {
-    return NextResponse.json({ error: "ANTHROPIC_API_KEY fehlt. .env.local anlegen." }, { status: 500 });
+    return NextResponse.json({ error: "ANTHROPIC_API_KEY fehlt." }, { status: 500 });
   }
+
+  // 1) Nur für angemeldete Nutzer — schützt das Guthaben vor fremdem Zugriff
+  const supabase = getServerClient();
+  let userId: string | null = null;
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    userId = user?.id ?? null;
+  } catch { userId = null; }
+  if (!userId) {
+    return NextResponse.json({ error: "Nicht angemeldet." }, { status: 401 });
+  }
+
+  // 2) Nutzungslimit pro Konto
+  const limitMsg = await checkRateLimit(supabase, userId);
+  if (limitMsg) return NextResponse.json({ error: limitMsg }, { status: 429 });
+
   let body: { messages?: unknown; schema?: Record<string, unknown>; maxTokens?: number; search?: boolean };
   try { body = await req.json(); } catch { return NextResponse.json({ error: "Ungültiger Body." }, { status: 400 }); }
 

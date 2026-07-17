@@ -38,10 +38,15 @@ export async function middleware(request: NextRequest) {
     const { pathname } = request.nextUrl;
     const isAuthPath = pathname.startsWith("/auth");
     const isApiPath = pathname.startsWith("/api");
+    // Rechtstexte müssen ohne Anmeldung erreichbar sein
+    const isPublicPath = pathname.startsWith("/impressum") || pathname.startsWith("/datenschutz");
+    // Diese Auth-Seiten müssen auch mit (Recovery-)Session erreichbar bleiben,
+    // sonst kann ein Nutzer sein Passwort nach dem Reset-Link nie neu setzen.
+    const allowWithSession = pathname.startsWith("/auth/passwort-neu") || pathname.startsWith("/auth/confirm");
 
     if (isApiPath) return response;
-    if (user && isAuthPath) return NextResponse.redirect(new URL("/dashboard", request.url));
-    if (!user && !isAuthPath) {
+    if (user && isAuthPath && !allowWithSession) return NextResponse.redirect(new URL("/dashboard", request.url));
+    if (!user && !isAuthPath && !isPublicPath) {
       const loginUrl = new URL("/auth/login", request.url);
       loginUrl.searchParams.set("next", pathname);
       return NextResponse.redirect(loginUrl);

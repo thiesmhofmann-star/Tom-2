@@ -38,3 +38,21 @@ html, body { margin: 0; padding: 0; }
 .tom-btnP { transition:filter .12s cubic-bezier(.4,0,.2,1),transform .12s cubic-bezier(.4,0,.2,1); }
 .tom-btnP:hover { filter:brightness(1.12); }
 .tom-btnP:active { transform:scale(.97); }
+
+/* ── Layout: Desktop-Standard ── */
+.tom-sidebar { width:250px; flex-shrink:0; position:sticky; top:0; height:100vh; }
+.tom-hamburger { display:none; }
+.tom-overlay { display:none; }
+
+/* ── Mobil: Sidebar wird zum Slide-over ── */
+@media (max-width: 900px) {
+  .tom-sidebar {
+    position:fixed; left:0; top:0; z-index:50; height:100vh;
+    transform:translateX(-100%); transition:transform .25s ease;
+  }
+  .tom-sidebar.open { transform:translateX(0); box-shadow:0 0 50px rgba(0,0,0,0.5); }
+  .tom-hamburger { display:inline-flex !important; }
+  .tom-overlay.show { display:block; position:fixed; inset:0; background:rgba(0,0,0,0.55); z-index:40; }
+  .tom-topbar { padding-left:16px !important; padding-right:16px !important; }
+  .tom-content { padding-left:16px !important; padding-right:16px !important; }
+}
