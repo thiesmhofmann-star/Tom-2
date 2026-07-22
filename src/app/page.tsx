@@ -60,7 +60,7 @@ function CycleRing() {
   ];
   const [ox, oy] = at(0);
   return (
-    <svg viewBox="0 0 320 320" style={{ width: "100%", maxWidth: 400, height: "auto", display: "block", margin: "0 auto" }} role="img" aria-label="Der APIC-Kreis: Analyse, Planen, Implementieren, Kontrollieren — und zurück.">
+    <svg viewBox="-90 -15 446 350" style={{ width: "100%", maxWidth: 400, height: "auto", display: "block", margin: "0 auto" }} role="img" aria-label="Der APIC-Kreis: Analyse, Planen, Implementieren, Kontrollieren — und zurück.">
       <defs>
         <linearGradient id="ringGrad" x1="0" y1="0" x2="320" y2="320" gradientUnits="userSpaceOnUse">
           <stop stopColor="#9061F0" /><stop offset="1" stopColor="#6D28D9" />
