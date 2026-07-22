@@ -7,6 +7,7 @@ import { MODULES } from "@/lib/profile";
 import { storeGet, storeClear, getThemeLocal, setThemeLocal } from "@/lib/store";
 import { getBrowserClient } from "@/lib/supabase/client";
 import { Logo } from "@/components/ui/Basics";
+import { FeedbackBar } from "@/components/ui/FeedbackBar";
 import type { Profile } from "@/types";
 
 const HEADS: Record<string, [string, string]> = {
@@ -18,11 +19,13 @@ const HEADS: Record<string, [string, string]> = {
   "/modul/performance": ["Check", "Performance"],
   "/modul/steuerung": ["Steuerung", "Steuerung & Schnittstellen"],
   "/einstellungen/produktion": ["Einstellung", "Produktion bearbeiten"],
+  "/einstellungen/konto": ["Einstellung", "Konto"],
+  "/verlauf": ["Rückblick", "Verlauf"],
 };
 
 const CHAIN_KEY: Record<string, string> = { m1: "mki:feed", m2: "mki:strategy", m3: "mki:contentplan", m4: "mki:campaign", m5: "mki:performance" };
 const CHAIN_ORDER = ["m1", "m2", "m3", "m4", "m5"];
-const RESET_KEYS = ["mki:profile", "mki:feed", "mki:briefs", "mki:strategy", "mki:strategybudget", "mki:contentplan", "mki:contenttone", "mki:campaign", "mki:performance", "mki:learnings"];
+const RESET_KEYS = ["mki:profile", "mki:feed", "mki:briefs", "mki:strategy", "mki:strategybudget", "mki:contentplan", "mki:contenttone", "mki:campaign", "mki:performance", "mki:learnings", "mki:round", "mki:rounds"];
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -59,6 +62,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const nextKey = CHAIN_ORDER.find((k) => !chain[k]) || null;
   const head = HEADS[pathname] ?? HEADS["/dashboard"];
   const modules = profile?.modules ?? {};
+  // Feedback nur in den Modulen — dort entsteht die Substanz, die bewertet werden kann.
+  const activeModule = MODULES.find((m) => m.path === pathname) ?? null;
 
   const tBtn = (t: "dark" | "light", label: string) => (
     <button onClick={() => changeTheme(t)} style={{ border: "none", cursor: "pointer", padding: "6px 14px", borderRadius: 999, background: theme === t ? C.accent : "transparent", color: theme === t ? "#fff" : C.inkMuted, fontSize: 12.5, fontWeight: 600, fontFamily: FONT }}>{label}</button>
@@ -97,7 +102,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             })}
           </div>
           <div style={{ marginTop: "auto", paddingTop: 14, borderTop: `1px solid ${C.line}` }}>
+            <button onClick={() => router.push("/verlauf")} style={{ display: "block", width: "100%", textAlign: "left", padding: "10px 11px", borderRadius: 10, fontSize: 13, color: C.inkSoft, cursor: "pointer", background: pathname === "/verlauf" ? C.accentSoft : "transparent", border: "none", fontFamily: FONT }}>Verlauf</button>
             <button onClick={() => router.push("/einstellungen/produktion")} style={{ display: "block", width: "100%", textAlign: "left", padding: "10px 11px", borderRadius: 10, fontSize: 13, color: C.inkSoft, cursor: "pointer", background: pathname === "/einstellungen/produktion" ? C.accentSoft : "transparent", border: "none", fontFamily: FONT }}>Produktion bearbeiten</button>
+            <button onClick={() => router.push("/einstellungen/konto")} style={{ display: "block", width: "100%", textAlign: "left", padding: "10px 11px", borderRadius: 10, fontSize: 13, color: C.inkSoft, cursor: "pointer", background: pathname === "/einstellungen/konto" ? C.accentSoft : "transparent", border: "none", fontFamily: FONT }}>Konto</button>
             <button onClick={reset} style={{ display: "block", width: "100%", textAlign: "left", padding: "10px 11px", borderRadius: 10, fontSize: 13, color: C.inkMuted, cursor: "pointer", background: "transparent", border: "none", fontFamily: FONT }}>Neu einrichten</button>
             <div style={{ display: "flex", gap: 12, padding: "10px 11px 0" }}>
               <a href="/impressum" style={{ fontSize: 11.5, color: C.faint, fontWeight: 600 }}>Impressum</a>
@@ -124,7 +131,16 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             )}
           </div>
           <div className="tom-content" style={{ flex: 1, padding: "28px 30px 48px", background: C.paper, overflowX: "hidden" }}>
-            <div style={{ maxWidth: 900, margin: "0 auto" }}>{children}</div>
+            <div style={{ maxWidth: 900, margin: "0 auto" }}>
+              {children}
+              {activeModule && (
+                <FeedbackBar
+                  key={pathname}
+                  module={activeModule.key}
+                  label={"„" + activeModule.name + "“"}
+                />
+              )}
+            </div>
           </div>
         </div>
       </div>

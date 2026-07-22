@@ -6,7 +6,7 @@ export const metadata = { title: "Datenschutz – Tom" };
 
 /*
   WICHTIG: Diese Datenschutzerklärung ist eine auf den tatsächlichen Technik-Stack
-  zugeschnittene VORLAGE (Supabase EU/Frankfurt, Anthropic USA, Vercel). Sie ersetzt
+  zugeschnittene VORLAGE (Supabase London/UK, Anthropic USA, Vercel). Sie ersetzt
   KEINE Rechtsberatung. Vor Veröffentlichung: Platzhalter füllen und anwaltlich prüfen
   lassen — insbesondere die Drittlandübermittlung an Anthropic (USA).
 */
@@ -39,7 +39,7 @@ export default function DatenschutzPage() {
       <h2 style={h2}>4. Auftragsverarbeiter und Hosting</h2>
       <p style={p}>Wir setzen sorgfältig ausgewählte Dienstleister ein, mit denen Verträge zur Auftragsverarbeitung (Art. 28 DSGVO) bestehen:</p>
       <ul style={{ margin: "0 0 10px", paddingLeft: 20 }}>
-        <li style={li}><b>Supabase</b> — Datenbank und Authentifizierung. Deine Konto- und Anwendungsdaten werden in der Region EU (Frankfurt, Deutschland) gespeichert.</li>
+        <li style={li}><b>Supabase</b> — Datenbank und Authentifizierung. Deine Konto- und Anwendungsdaten werden in der Region London (Vereinigtes Königreich) gespeichert. Für das Vereinigte Königreich besteht ein Angemessenheitsbeschluss der EU-Kommission (Art. 45 DSGVO), sodass die Übermittlung ohne zusätzliche Garantien zulässig ist.</li>
         <li style={li}><b>Vercel</b> — Hosting und Auslieferung der Anwendung. Dabei können technisch bedingt Verbindungsdaten (z. B. IP-Adresse) verarbeitet werden.</li>
         <li style={li}><b>Anthropic</b> — Verarbeitung der KI-Anfragen. Wenn du eine Analyse, Strategie oder Ähnliches erzeugst, werden die dafür nötigen Eingaben zur Verarbeitung an Anthropic übermittelt.</li>
       </ul>

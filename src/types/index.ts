@@ -47,3 +47,17 @@ export interface PerformanceReport {
   lernpunkte: Array<{ claim: string; why: string }>;
   hinweis: string;
 }
+
+/** Unveränderliches Abbild eines abgeschlossenen APIC-Zyklus. */
+export interface RoundSnapshot {
+  n: number;
+  closedAt: string;
+  goal?: string;
+  strategy: StrategyM2 | null;
+  budget: string;
+  contentPlan: ContentPost[];
+  campaign: Campaign | null;
+  performance: { rows: KpiRow[]; rep: PerformanceReport | null } | null;
+  feedCount: number;
+  briefsCount: number;
+}

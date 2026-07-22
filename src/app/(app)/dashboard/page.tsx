@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { C, FONT } from "@/lib/tokens";
 import { storeGet, currentUserId } from "@/lib/store";
 import { MODULES } from "@/lib/profile";
+import { closeRound, getCurrentRound } from "@/lib/rounds";
+import { Spinner } from "@/components/ui/Basics";
 import type { Profile } from "@/types";
 
 const ACT: Record<string, { bg: string; fg: string; label: string }> = {
@@ -34,6 +36,11 @@ export default function DashboardPage() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [chain, setChain] = useState<Record<string, boolean>>({});
   const [loading, setLoading] = useState(true);
+  const [round, setRound] = useState(1);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [closing, setClosing] = useState(false);
+  const [closeErr, setCloseErr] = useState("");
+  const [closedTo, setClosedTo] = useState<number | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -46,9 +53,25 @@ export default function DashboardPage() {
       const out: Record<string, boolean> = {};
       for (const f of FLOW) { const v = await storeGet(f.key); out[f.key] = !!(v && (Array.isArray(v) ? (v as unknown[]).length : true)); }
       setChain(out);
+      setRound(await getCurrentRound());
       setLoading(false);
     })();
   }, [router]);
+
+  async function doCloseRound() {
+    setClosing(true); setCloseErr("");
+    try {
+      const snap = await closeRound();
+      setClosedTo(snap.n + 1);
+      setRound(snap.n + 1);
+      setChain({});
+      setConfirmOpen(false);
+    } catch (e) {
+      setCloseErr(e instanceof Error ? e.message : "Die Runde konnte nicht abgeschlossen werden.");
+    } finally {
+      setClosing(false);
+    }
+  }
 
   if (loading) return <div style={{ padding: "40px 0", textAlign: "center", color: C.inkSoft, fontFamily: FONT }}>Lädt …</div>;
   if (!profile) return null;
@@ -57,7 +80,7 @@ export default function DashboardPage() {
   const nextIdx = FLOW.findIndex(f => !chain[f.key]);
   const complete = nextIdx === -1;
   const nextMod = complete ? "m1" : FLOW[nextIdx].mod;
-  const hero = complete ? { h: "Der Kreis ist geschlossen", p: "Spiel die Lernpunkte aus der Performance zurück in Insight und starte die nächste Runde.", cta: "Nächste Runde starten" } : HERO[nextMod];
+  const hero = complete ? { h: "Der Kreis ist geschlossen", p: "Schließ die Runde ab: Der Zyklus wird archiviert, die Lernpunkte bleiben und Runde " + (round + 1) + " startet mit einem freien Blatt.", cta: "Runde abschließen" } : HERO[nextMod];
   const posLabel = complete ? "Kreis geschlossen" : "Schritt " + (nextIdx + 1) + " von 5";
   const completed = complete ? 5 : nextIdx;
   const CIRC = 389.6;
@@ -67,8 +90,22 @@ export default function DashboardPage() {
 
   return (
     <div style={{ fontFamily: FONT, color: C.ink }}>
+      {closedTo && (
+        <div style={{ background: C.faktBg, border: `1px solid ${C.faktFg}44`, borderRadius: 12, padding: "12px 15px", marginBottom: 18, display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+          <span style={{ fontSize: 13.5, color: C.ink, fontWeight: 600, flex: 1, minWidth: 220 }}>
+            ✓ Runde {closedTo - 1} ist abgeschlossen und archiviert. Runde {closedTo} beginnt.
+          </span>
+          <button onClick={() => router.push("/verlauf")}
+            style={{ background: "transparent", border: `1px solid ${C.faktFg}66`, color: C.faktFg, padding: "7px 14px", borderRadius: 9, fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: FONT }}>
+            Im Verlauf ansehen →
+          </button>
+        </div>
+      )}
       <div style={{ marginBottom: 22 }}>
-        <div style={{ fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase", color: C.inkMuted, fontWeight: 700 }}>Übersicht</div>
+        <div style={{ display: "flex", alignItems: "center", gap: 9, flexWrap: "wrap" }}>
+          <span style={{ fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase", color: C.inkMuted, fontWeight: 700 }}>Übersicht</span>
+          <span style={{ background: C.accentSoft, color: C.accentStrong, fontSize: 11, fontWeight: 700, padding: "3px 9px", borderRadius: 7, letterSpacing: "0.03em" }}>RUNDE {round}</span>
+        </div>
         <h1 style={{ margin: "4px 0 3px", fontSize: 28, fontWeight: 800, letterSpacing: "-0.02em" }}>{profile.company || "Dein Unternehmen"}</h1>
         <div style={{ fontSize: 13, color: C.inkMuted }}>{[profile.industry, profile.audience, "Modus: " + modeLabel].filter(Boolean).join(" · ")}</div>
       </div>
@@ -89,7 +126,36 @@ export default function DashboardPage() {
           <div style={{ fontSize: 11, letterSpacing: "0.08em", textTransform: "uppercase", color: C.accentStrong, fontWeight: 700, marginBottom: 6 }}>{posLabel} · APIC</div>
           <div style={{ fontSize: 22, fontWeight: 800, letterSpacing: "-0.02em", marginBottom: 5 }}>{hero.h}</div>
           <p style={{ fontSize: 14, color: C.inkSoft, margin: "0 0 16px", lineHeight: 1.55, maxWidth: "46ch" }}>{hero.p}</p>
-          <button className="tom-btnP" onClick={() => router.push(PATH[nextMod])} style={{ background: C.accent, color: "#fff", border: "none", padding: "11px 20px", borderRadius: 10, fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: FONT }}>{hero.cta} →</button>
+          {!confirmOpen && (
+            <button className="tom-btnP"
+              onClick={() => complete ? (setConfirmOpen(true), setCloseErr("")) : router.push(PATH[nextMod])}
+              style={{ background: C.accent, color: "#fff", border: "none", padding: "11px 20px", borderRadius: 10, fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: FONT }}>{hero.cta} →</button>
+          )}
+
+          {confirmOpen && (
+            <div style={{ background: C.card, border: `1px solid ${C.accentLine}`, borderRadius: 12, padding: 14, maxWidth: "46ch" }}>
+              <div style={{ fontSize: 13.5, fontWeight: 700, marginBottom: 6 }}>Runde {round} abschließen?</div>
+              <p style={{ fontSize: 13, color: C.inkSoft, lineHeight: 1.55, margin: "0 0 10px" }}>
+                Strategie, Content-Plan, Kampagne und Auswertung wandern unverändert in den Verlauf.
+                Die Module 1 bis 5 starten danach leer. Dein Unternehmensprofil und die Lernpunkte
+                aus der Performance bleiben erhalten.
+              </p>
+              {closeErr && (
+                <p style={{ fontSize: 12.5, color: C.signalFg, background: C.signalBg, padding: "8px 11px", borderRadius: 8, margin: "0 0 10px" }}>{closeErr}</p>
+              )}
+              <div style={{ display: "flex", gap: 9, flexWrap: "wrap" }}>
+                <button className="tom-btnP" onClick={doCloseRound} disabled={closing}
+                  style={{ background: C.accent, color: "#fff", border: "none", padding: "9px 17px", borderRadius: 9, fontSize: 13.5, fontWeight: 700, cursor: closing ? "default" : "pointer", fontFamily: FONT, display: "inline-flex", alignItems: "center", gap: 8 }}>
+                  {closing && <Spinner size={13} white />}
+                  {closing ? "Schließt ab …" : "Ja, abschließen"}
+                </button>
+                {!closing && (
+                  <button onClick={() => setConfirmOpen(false)}
+                    style={{ background: "transparent", border: `1px solid ${C.line}`, color: C.accent, padding: "9px 17px", borderRadius: 9, fontSize: 13.5, fontWeight: 600, cursor: "pointer", fontFamily: FONT }}>Abbrechen</button>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
