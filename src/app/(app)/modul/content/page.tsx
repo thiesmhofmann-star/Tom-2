@@ -14,6 +14,55 @@ import { ExportBar } from "@/components/layout/ExportBar";
 
 interface PlanIdea { datum: string; plattform: string; format: string; idee: string; hook: string; warum: string; }
 
+const DAY_LABELS = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"];
+const DAY_TOKENS: Record<string, number> = { montag: 0, dienstag: 1, mittwoch: 2, donnerstag: 3, freitag: 4, samstag: 5, sonntag: 6, mo: 0, di: 1, mi: 2, do: 3, fr: 4, sa: 5, so: 6 };
+
+/** Liest aus einem Datum-Text wie "Woche 1 – Di" die Wochen- und Wochentagsposition. */
+function parseSlot(datum: string): { week: number; day: number } {
+  const low = (datum || "").toLowerCase();
+  const wk = low.match(/woche\s*(\d)/);
+  const week = wk ? Math.min(6, Math.max(1, parseInt(wk[1], 10))) : 1;
+  let day = 0;
+  for (const k of Object.keys(DAY_TOKENS)) { if (new RegExp("\\b" + k).test(low)) { day = DAY_TOKENS[k]; break; } }
+  return { week, day };
+}
+
+/** Monatsraster: ordnet die Beiträge des Plans nach Woche/Wochentag an. Klick öffnet den Beitrag in der Liste. */
+function ContentCalendar({ plan, onOpen }: { plan: ContentPost[]; onOpen: (i: number) => void }) {
+  const slots = plan.map((p, i) => ({ i, p, ...parseSlot(p.datum) }));
+  const maxWeek = Math.max(4, ...slots.map(s => s.week));
+  const weeks = Array.from({ length: maxWeek }, (_, k) => k + 1);
+  const cols = "34px repeat(7, 1fr)";
+  return (
+    <div style={{ marginBottom: 16 }}>
+      <div style={{ display: "grid", gridTemplateColumns: cols, gap: 4, marginBottom: 4 }}>
+        <div />
+        {DAY_LABELS.map((d, i) => (
+          <div key={d} style={{ textAlign: "center", fontSize: 11, fontWeight: 600, color: i >= 5 ? C.inkMuted : C.inkSoft }}>{d}</div>
+        ))}
+      </div>
+      {weeks.map(w => (
+        <div key={w} style={{ display: "grid", gridTemplateColumns: cols, gap: 4, marginBottom: 4 }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, fontWeight: 600, color: C.inkSoft }}>W{w}</div>
+          {DAY_LABELS.map((_, di) => {
+            const cell = slots.filter(s => s.week === w && s.day === di);
+            return (
+              <div key={di} style={{ minHeight: 50, background: di >= 5 ? C.hoverBg : C.card, border: `1px solid ${C.line}`, borderRadius: 8, padding: 3, display: "flex", flexDirection: "column", gap: 3 }}>
+                {cell.map(s => (
+                  <button key={s.i} onClick={() => onOpen(s.i)} title={s.p.idee} style={{ textAlign: "left", background: C.accentSoft, border: `1px solid ${C.accentLine}`, borderRadius: 7, padding: "4px 5px", cursor: "pointer", fontFamily: FONT }}>
+                    <div style={{ fontSize: 10, fontWeight: 700, color: C.accentStrong, lineHeight: 1.2 }}>{s.p.plattform}</div>
+                    <div style={{ fontSize: 9.5, color: C.inkSoft, lineHeight: 1.2 }}>{s.p.format}</div>
+                  </button>
+                ))}
+              </div>
+            );
+          })}
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export default function ContentPage() {
   const router = useRouter();
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -26,6 +75,7 @@ export default function ContentPage() {
   const [err, setErr] = useState("");
   const [open, setOpen] = useState<number | null>(null);
   const [sent, flashSent] = useFlash();
+  const [view, setView] = useState<"liste" | "kalender">("liste");
 
   useEffect(() => { (async () => {
     const p = await storeGet<Profile>("mki:profile"); setProfile(p);
@@ -47,8 +97,8 @@ export default function ContentPage() {
     try {
       const stratText = strategy ? `Strategie: ${strategy.headline}. ${strategy.rationale}` : "Keine Strategie hinterlegt — nutze Profil und Ziel.";
       const toneText = tone ? `Tonalitaet: ${tone}.` : "";
-      const prompt = `Du bist Content-Stratege fuer "${profile.company || "das Unternehmen"}" (${profile.industry ?? ""}, ${profile.audience ?? ""}, Ziel: ${profile.goal ?? "k.A."}). ${stratText} ${toneText} ${prodCtx(profile)} Entwirf einen Monatsplan mit genau 5 Beitraegen — verteilt ueber Wochen, passend zu Plattformen (Instagram, LinkedIn, TikTok, YouTube je nach Zielgruppe). Antworte AUSSCHLIESSLICH mit JSON: {"plan":[{"datum":"z.B. Woche 1 – Di","plattform":"","format":"z.B. Reel","idee":"1 Satz","hook":"starker Aufhaenger","warum":"1 Satz Bezug zur Strategie"}]}. Genau 5 Eintraege.`;
-      const j = await llmJSON<{ plan: PlanIdea[] }>([{ role: "user", content: prompt }], SCHEMA_M3PLAN as Record<string, unknown>, { search: false, maxTokens: 3000 });
+      const prompt = `Du bist Content-Stratege fuer "${profile.company || "das Unternehmen"}" (${profile.industry ?? ""}, ${profile.audience ?? ""}, Ziel: ${profile.goal ?? "k.A."}). ${stratText} ${toneText} ${prodCtx(profile)} Entwirf einen Redaktionsplan fuer einen Monat mit genau 12 Beitraegen — 3 pro Woche, verteilt ueber Woche 1 bis Woche 4, jeder Beitrag an einem konkreten Wochentag von Montag bis Freitag. Mische Plattformen (Instagram, LinkedIn, TikTok, YouTube je nach Zielgruppe) und Formate. Antworte AUSSCHLIESSLICH mit JSON: {"plan":[{"datum":"Woche 1 – Di","plattform":"","format":"z.B. Reel","idee":"1 Satz","hook":"starker Aufhaenger","warum":"1 Satz Bezug zur Strategie"}]}. Das Feld "datum" IMMER im Format "Woche N – Tag" (Tag = Mo/Di/Mi/Do/Fr). Genau 12 Eintraege, 3 je Woche.`;
+      const j = await llmJSON<{ plan: PlanIdea[] }>([{ role: "user", content: prompt }], SCHEMA_M3PLAN as Record<string, unknown>, { search: false, maxTokens: 4000 });
       if (!j?.plan?.length) setErr("Der Plan kam nicht im erwarteten Format. Versuch es noch einmal.");
       else { const posts: ContentPost[] = j.plan.map(x => ({ ...x })); setPlan(posts); await storeSet("mki:contentplan", posts); await storeSet("mki:contenttone", tone); setOpen(null); }
     } catch (e) { setErr("Erstellung gerade nicht möglich." + (e instanceof Error ? ` [${e.message}]` : "")); }
@@ -79,7 +129,7 @@ export default function ContentPage() {
     if (allBusy || !profile) return; setAllBusy(true); setErr("");
     try {
       const next = [...plan];
-      for (let i = 0; i < next.length; i++) { if (!next[i].skript) { const u = await writeScript(i); if (u) next[i] = u; } }
+      for (let i = 0; i < next.length; i++) { if (!next[i].skript) { const u = await writeScript(i); if (u) next[i] = u; await new Promise(r => setTimeout(r, 300)); } }
       setPlan(next); await storeSet("mki:contentplan", next);
     } catch (e) { setErr("Sammel-Erstellung unterbrochen." + (e instanceof Error ? ` [${e.message}]` : "")); }
     setAllBusy(false);
@@ -121,7 +171,22 @@ export default function ContentPage() {
       )}
       {allBusy && <LoadingCard label="Schreibe Skripte & Drehbücher …" />}
 
-      {plan.map((p, i) => (
+      {plan.length > 0 && (
+        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14, flexWrap: "wrap" }}>
+          <div style={{ display: "inline-flex", background: C.surface2, border: `1px solid ${C.line}`, borderRadius: 10, padding: 3 }}>
+            {(["liste", "kalender"] as const).map(v => (
+              <button key={v} onClick={() => setView(v)} style={{ fontFamily: FONT, fontSize: 13, fontWeight: 600, padding: "6px 16px", borderRadius: 8, border: "none", cursor: "pointer", background: view === v ? C.accentGrad : "transparent", color: view === v ? "#fff" : C.inkSoft }}>{v === "liste" ? "Liste" : "Kalender"}</button>
+            ))}
+          </div>
+          <span style={{ fontSize: 12, color: C.inkMuted }}>{plan.length} Beiträge</span>
+        </div>
+      )}
+
+      {view === "kalender" && plan.length > 0 && (
+        <ContentCalendar plan={plan} onOpen={(i) => { setView("liste"); setOpen(i); }} />
+      )}
+
+      {view === "liste" && plan.map((p, i) => (
         <div key={i} style={{ background: C.card, border: `1px solid ${C.line}`, borderRadius: 14, padding: 16, marginBottom: 12, boxShadow: C.shadow }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 10, flexWrap: "wrap" }}>
             <div style={{ flex: 1, minWidth: 200 }}>
