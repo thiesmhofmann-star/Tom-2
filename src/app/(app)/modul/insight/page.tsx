@@ -5,7 +5,7 @@ import { RefreshCw, Send } from "lucide-react";
 import { C, FONT } from "@/lib/tokens";
 import { storeGet, storeSet } from "@/lib/store";
 import { llmJSON } from "@/lib/llm";
-import { sanitizeUrl } from "@/lib/utils";
+import { sanitizeUrl, blendScore } from "@/lib/utils";
 import type { Profile, FeedItem, Brief, StrategyM2 } from "@/types";
 import { Pill } from "@/components/ui/Pill";
 import { Btn } from "@/components/ui/Btn";
@@ -40,7 +40,14 @@ export default function InsightPage() {
       const j = await llmJSON<FeedItem[] | FeedItem>([{ role: "user", content: prompt }], undefined, { search: true });
       const items: FeedItem[] = Array.isArray(j) ? j : (j ? [j] : []);
       if (!items.length) setErr("Die Antwort kam nicht im erwarteten Format. Formulier die Frage etwas konkreter.");
-      else { const stamped = items.map(it => ({ ...it, id: Date.now() + Math.random(), q: query })); const next = [...stamped, ...feed]; setFeed(next); await storeSet("mki:feed", next); }
+      else {
+        const stamped = items.map(it => {
+          const score = blendScore(it.score, it.url);
+          const type: "Fakt" | "Signal" = score >= 8 ? "Fakt" : "Signal";
+          return { ...it, score, type, id: Date.now() + Math.random(), q: query };
+        });
+        const next = [...stamped, ...feed]; setFeed(next); await storeSet("mki:feed", next);
+      }
     } catch (e) { setErr("Recherche gerade nicht möglich." + (e instanceof Error ? ` [${e.message}]` : "")); }
     setBusy(false);
   }
