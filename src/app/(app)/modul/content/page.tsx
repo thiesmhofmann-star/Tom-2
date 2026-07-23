@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { C, FONT } from "@/lib/tokens";
 import { storeGet, storeSet } from "@/lib/store";
@@ -27,8 +27,11 @@ function parseSlot(datum: string): { week: number; day: number } {
   return { week, day };
 }
 
-/** Monatsraster: ordnet die Beiträge des Plans nach Woche/Wochentag an. Klick öffnet den Beitrag in der Liste. */
-function ContentCalendar({ plan, onOpen }: { plan: ContentPost[]; onOpen: (i: number) => void }) {
+/** Monatsraster: ordnet die Beiträge des Plans nach Woche/Wochentag an.
+ *  Klick öffnet den Beitrag in der Liste, Ziehen verschiebt ihn auf einen anderen Tag. */
+function ContentCalendar({ plan, onOpen, onMove }: { plan: ContentPost[]; onOpen: (i: number) => void; onMove: (i: number, week: number, day: number) => void }) {
+  const dragIndex = useRef<number | null>(null);
+  const [overKey, setOverKey] = useState<string | null>(null);
   const slots = plan.map((p, i) => ({ i, p, ...parseSlot(p.datum) }));
   const maxWeek = Math.max(4, ...slots.map(s => s.week));
   const weeks = Array.from({ length: maxWeek }, (_, k) => k + 1);
@@ -45,11 +48,20 @@ function ContentCalendar({ plan, onOpen }: { plan: ContentPost[]; onOpen: (i: nu
         <div key={w} style={{ display: "grid", gridTemplateColumns: cols, gap: 4, marginBottom: 4 }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, fontWeight: 600, color: C.inkSoft }}>W{w}</div>
           {DAY_LABELS.map((_, di) => {
+            const key = `${w}-${di}`;
             const cell = slots.filter(s => s.week === w && s.day === di);
             return (
-              <div key={di} style={{ minHeight: 50, background: di >= 5 ? C.hoverBg : C.card, border: `1px solid ${C.line}`, borderRadius: 8, padding: 3, display: "flex", flexDirection: "column", gap: 3 }}>
+              <div key={di}
+                onDragOver={(e) => { e.preventDefault(); setOverKey(key); }}
+                onDragLeave={() => setOverKey(k => (k === key ? null : k))}
+                onDrop={(e) => { e.preventDefault(); setOverKey(null); if (dragIndex.current !== null) { onMove(dragIndex.current, w, di); dragIndex.current = null; } }}
+                style={{ minHeight: 50, background: di >= 5 ? C.hoverBg : C.card, border: `1px solid ${overKey === key ? C.accentMid : C.line}`, borderRadius: 8, padding: 3, display: "flex", flexDirection: "column", gap: 3 }}>
                 {cell.map(s => (
-                  <button key={s.i} onClick={() => onOpen(s.i)} title={s.p.idee} style={{ textAlign: "left", background: C.accentSoft, border: `1px solid ${C.accentLine}`, borderRadius: 7, padding: "4px 5px", cursor: "pointer", fontFamily: FONT }}>
+                  <button key={s.i} draggable
+                    onDragStart={() => { dragIndex.current = s.i; }}
+                    onDragEnd={() => { dragIndex.current = null; }}
+                    onClick={() => onOpen(s.i)} title={s.p.idee}
+                    style={{ textAlign: "left", background: C.accentSoft, border: `1px solid ${C.accentLine}`, borderRadius: 7, padding: "4px 5px", cursor: "grab", fontFamily: FONT }}>
                     <div style={{ fontSize: 10, fontWeight: 700, color: C.accentStrong, lineHeight: 1.2 }}>{s.p.plattform}</div>
                     <div style={{ fontSize: 9.5, color: C.inkSoft, lineHeight: 1.2 }}>{s.p.format}</div>
                   </button>
@@ -59,6 +71,7 @@ function ContentCalendar({ plan, onOpen }: { plan: ContentPost[]; onOpen: (i: nu
           })}
         </div>
       ))}
+      <div style={{ fontSize: 11.5, color: C.inkMuted, marginTop: 8 }}>Beitrag ziehen, um ihn auf einen anderen Tag zu verschieben · Klick öffnet ihn in der Liste.</div>
     </div>
   );
 }
@@ -183,7 +196,7 @@ export default function ContentPage() {
       )}
 
       {view === "kalender" && plan.length > 0 && (
-        <ContentCalendar plan={plan} onOpen={(i) => { setView("liste"); setOpen(i); }} />
+        <ContentCalendar plan={plan} onOpen={(i) => { setView("liste"); setOpen(i); }} onMove={async (i, week, day) => { const next = plan.map((pp, x) => (x === i ? { ...pp, datum: `Woche ${week} \u2013 ${DAY_LABELS[day]}` } : pp)); setPlan(next); await storeSet("mki:contentplan", next); }} />
       )}
 
       {view === "liste" && plan.map((p, i) => (
