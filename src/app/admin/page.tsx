@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { requireAdmin } from "@/lib/admin";
+import { getAdmin } from "@/lib/admin";
 
 export const dynamic = "force-dynamic";
 
@@ -14,8 +14,21 @@ const FONT = "'Poppins',-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sa
 function fmtDate(s?: string | null) { if (!s) return "—"; try { return new Date(s).toLocaleDateString("de-DE"); } catch { return "—"; } }
 function initials(email: string) { const n = email.replace(/@.*/, ""); return (n.slice(0, 2) || "?").toUpperCase(); }
 
+function ConfigNotice() {
+  const wrap: React.CSSProperties = { minHeight: "100vh", background: "#0F0D18", color: "#fff", fontFamily: "'Poppins',system-ui,sans-serif", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 };
+  return (
+    <div style={wrap}><div style={{ maxWidth: 460, background: "#15121F", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 16, padding: 24 }}>
+      <div style={{ fontSize: 17, fontWeight: 700, marginBottom: 8 }}>Admin-Bereich noch nicht einsatzbereit</div>
+      <p style={{ fontSize: 13.5, color: "#B7AFD1", lineHeight: 1.6, margin: 0 }}>Es fehlt die Umgebungsvariable <b style={{ color: "#C4A8F8" }}>SUPABASE_SERVICE_ROLE_KEY</b> in Vercel. In Vercel → Projekt tom-2 → Settings → Environment Variables anlegen (Production), Wert aus Supabase → Settings → API → service_role. Danach neu deployen.</p>
+      <a href="/dashboard" style={{ display: "inline-block", marginTop: 14, color: "#C4A8F8", fontWeight: 600, fontSize: 13, textDecoration: "none" }}>← Zurück</a>
+    </div></div>
+  );
+}
+
 export default async function AdminPage() {
-  const admin = await requireAdmin();
+  const acc = await getAdmin();
+  if (!acc.ok) return <ConfigNotice />;
+  const admin = acc.client;
   const { data: list } = await admin.auth.admin.listUsers({ perPage: 1000 });
   const users = (list?.users ?? []).slice().sort((a, b) => (b.created_at ?? "").localeCompare(a.created_at ?? ""));
   const { data: usage } = await admin.from("api_usage").select("user_id");
