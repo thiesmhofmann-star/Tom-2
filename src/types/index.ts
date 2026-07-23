@@ -36,7 +36,7 @@ export interface ContentPost {
 export interface Campaign {
   ziel: string; laufzeit: string; gesamtbudget: string; wochen_gesamt: number;
   phasen: Array<{ name: string; von: number; bis: number; fokus: string }>;
-  kanaele: Array<{ kanal: string; rolle: string; budget: string; von: number; bis: number; inhalt: string; test: string; kpi: string }>;
+  kanaele: Array<{ kanal: string; rolle: string; budget: string; von: number; bis: number; inhalt: string; test: string; kpi: string; status?: string }>;
 }
 
 export interface KpiRow { label: string; value: string; custom: boolean; }
