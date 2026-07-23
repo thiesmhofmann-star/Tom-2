@@ -2,6 +2,11 @@ import type { Metadata } from "next";
 import { Analytics } from "@vercel/analytics/react";
 import "./globals.css";
 
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+};
+
 export const metadata: Metadata = {
   title: "Tom — Marketing-Assistent",
   description: "KI-gestützter Marketing-Assistent für interne Teams",

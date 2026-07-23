@@ -58,7 +58,7 @@ html, body { margin: 0; padding: 0; }
 }
 
 /* ── Landingpage ── */
-.lp-nav { max-width:1080px; margin:0 auto; }
+.lp-nav { max-width:1080px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; gap:12px; padding:18px 24px; }
 .lp-section { max-width:1080px; margin:0 auto; padding-left:24px; padding-right:24px; }
 .lp-hero-grid { display:grid; grid-template-columns:1.05fr 0.95fr; gap:48px; align-items:center; }
 .lp-modules { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
@@ -81,6 +81,11 @@ html, body { margin: 0; padding: 0; }
   .lp-modules { grid-template-columns:1fr; }
   .lp-phases { grid-template-columns:1fr; }
   .lp-h1 { font-size:31px; }
+  .lp-nav { padding:14px 16px; gap:8px; }
+  .lp-section { padding-left:16px; padding-right:16px; }
+}
+@media (max-width: 380px) {
+  .lp-nav .tom-btnP { padding:8px 12px !important; font-size:13px !important; }
 }
 @media (prefers-reduced-motion: reduce) {
   .lp-orbit { animation:none; }
