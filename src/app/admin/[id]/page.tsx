@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getAdmin } from "@/lib/admin";
+import { LogoutButton } from "../LogoutButton";
 
 export const dynamic = "force-dynamic";
 
@@ -60,7 +61,10 @@ export default async function AdminUserPage({ params }: { params: { id: string }
 
   return (
     <div style={wrap}><div style={inner}>
-      <Link href="/admin" style={{ color: K.accentFg, fontSize: 13, fontWeight: 600, textDecoration: "none" }}>‹ zurück zur Liste</Link>
+      <div style={{ display: "flex", alignItems: "center" }}>
+        <Link href="/admin" style={{ color: K.accentFg, fontSize: 13, fontWeight: 600, textDecoration: "none" }}>‹ zurück zur Liste</Link>
+        <span style={{ marginLeft: "auto" }}><LogoutButton /></span>
+      </div>
 
       <div style={{ display: "flex", alignItems: "center", gap: 12, margin: "16px 0 18px" }}>
         <div style={{ width: 42, height: 42, borderRadius: "50%", background: K.accentSoft, color: K.accentFg, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: 15 }}>{initials(user.email ?? "?")}</div>

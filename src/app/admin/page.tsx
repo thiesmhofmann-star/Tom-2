@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getAdmin } from "@/lib/admin";
+import { LogoutButton } from "./LogoutButton";
 
 export const dynamic = "force-dynamic";
 
@@ -44,7 +45,10 @@ export default async function AdminPage() {
       <div style={{ display: "flex", alignItems: "center", gap: 11, marginBottom: 6 }}>
         <div style={{ width: 34, height: 34, borderRadius: 10, background: K.grad, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: 18 }}>T</div>
         <h1 style={{ fontSize: 20, fontWeight: 800, letterSpacing: "-0.02em", margin: 0 }}>Admin · Nutzer</h1>
-        <span style={{ marginLeft: "auto", fontSize: 12, color: K.muted }}>{users.length} Konten</span>
+        <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 12 }}>
+          <span style={{ fontSize: 12, color: K.muted }}>{users.length} Konten</span>
+          <LogoutButton />
+        </div>
       </div>
       <p style={{ fontSize: 13, color: K.muted, margin: "0 0 20px" }}>Nur Meta-Daten. <Link href="/dashboard" style={{ color: K.accentFg }}>Zur App →</Link></p>
 
