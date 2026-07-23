@@ -37,8 +37,9 @@ export default function ImpressumPage() {
       <h2 style={h2}>Streitschlichtung</h2>
       <p style={p}>Die Europäische Kommission stellt eine Plattform zur Online-Streitbeilegung (OS) bereit. Wir sind nicht bereit oder verpflichtet, an Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle teilzunehmen.</p>
 
-      <div style={{ marginTop: 40, display: "flex", gap: 16 }}>
+      <div style={{ marginTop: 40, display: "flex", gap: 16, flexWrap: "wrap" }}>
         <Link href="/datenschutz" style={{ color: C.accent, fontSize: 13.5, fontWeight: 600 }}>Datenschutzerklärung</Link>
+        <Link href="/agb" style={{ color: C.accent, fontSize: 13.5, fontWeight: 600 }}>AGB</Link>
         <Link href="/auth/login" style={{ color: C.inkMuted, fontSize: 13.5, fontWeight: 600 }}>Zur Anmeldung</Link>
       </div>
     </div>

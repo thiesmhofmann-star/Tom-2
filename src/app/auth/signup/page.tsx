@@ -54,7 +54,7 @@ export default function SignupPage() {
       <input value={invite} onChange={e => setInvite(e.target.value)} onKeyDown={e => e.key === "Enter" && !busy && signup()} placeholder="Einladungscode" style={{ ...inp, marginBottom: 16 }} />
       {err && <p style={{ fontSize: 13, color: C.signalFg, background: C.signalBg, padding: "8px 12px", borderRadius: 8, marginBottom: 12 }}>{err}</p>}
       <Btn onClick={signup} disabled={busy} loading={busy}>{busy ? "Erstelle Konto …" : "Konto erstellen"}</Btn>
-      <p style={{ fontSize: 12, color: C.inkSoft, marginTop: 16, lineHeight: 1.5 }}>Die Registrierung ist nur mit gültigem Einladungscode möglich. Deine Konto- und Anwendungsdaten werden bei Supabase in der Region London (UK) gespeichert. Details in der <Link href="/datenschutz" style={{ color: C.accent }}>Datenschutzerklärung</Link>.</p>
+      <p style={{ fontSize: 12, color: C.inkSoft, marginTop: 16, lineHeight: 1.5 }}>Mit „Konto erstellen" akzeptierst du die <Link href="/agb" style={{ color: C.accent }}>AGB</Link>. Die Registrierung ist nur mit gültigem Einladungscode möglich. Deine Konto- und Anwendungsdaten werden bei Supabase in der Region London (UK) gespeichert. Details in der <Link href="/datenschutz" style={{ color: C.accent }}>Datenschutzerklärung</Link>.</p>
     </div></div>
   );
 }

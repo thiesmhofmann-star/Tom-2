@@ -57,8 +57,9 @@ export default function DatenschutzPage() {
 
       <p style={{ ...p, marginTop: 24, fontSize: 12.5, color: C.faint }}>Stand: 23. Juli 2026. Diese Erklärung wird bei Änderungen des Funktionsumfangs aktualisiert.</p>
 
-      <div style={{ marginTop: 32, display: "flex", gap: 16 }}>
+      <div style={{ marginTop: 32, display: "flex", gap: 16, flexWrap: "wrap" }}>
         <Link href="/impressum" style={{ color: C.accent, fontSize: 13.5, fontWeight: 600 }}>Impressum</Link>
+        <Link href="/agb" style={{ color: C.accent, fontSize: 13.5, fontWeight: 600 }}>AGB</Link>
         <Link href="/auth/login" style={{ color: C.inkMuted, fontSize: 13.5, fontWeight: 600 }}>Zur Anmeldung</Link>
       </div>
     </div>

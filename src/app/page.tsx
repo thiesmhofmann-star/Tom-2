@@ -215,9 +215,10 @@ export default async function LandingPage() {
         <div style={{ display: "flex", alignItems: "center", gap: 9, color: K.muted, fontSize: 13 }}>
           <Logo size={20} /> Tom · KI-Marketing, neu gedacht.
         </div>
-        <div style={{ display: "flex", gap: 18 }}>
+        <div style={{ display: "flex", gap: 18, flexWrap: "wrap" }}>
           <a href="/impressum" style={{ color: K.faint, fontSize: 13, fontWeight: 600, textDecoration: "none" }}>Impressum</a>
           <a href="/datenschutz" style={{ color: K.faint, fontSize: 13, fontWeight: 600, textDecoration: "none" }}>Datenschutz</a>
+          <a href="/agb" style={{ color: K.faint, fontSize: 13, fontWeight: 600, textDecoration: "none" }}>AGB</a>
         </div>
       </footer>
     </div>
