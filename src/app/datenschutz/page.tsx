@@ -5,10 +5,9 @@ import { Logo } from "@/components/ui/Basics";
 export const metadata = { title: "Datenschutz – Tom" };
 
 /*
-  WICHTIG: Diese Datenschutzerklärung ist eine auf den tatsächlichen Technik-Stack
-  zugeschnittene VORLAGE (Supabase London/UK, Anthropic USA, Vercel). Sie ersetzt
-  KEINE Rechtsberatung. Vor Veröffentlichung: Platzhalter füllen und anwaltlich prüfen
-  lassen — insbesondere die Drittlandübermittlung an Anthropic (USA).
+  Angaben gefüllt (Stand: 23. Juli 2026), zugeschnitten auf den Stack (Supabase
+  London/UK, Anthropic USA, Vercel). Ersetzt KEINE Rechtsberatung — vor Livegang
+  anwaltlich prüfen lassen, insbesondere die Drittlandübermittlung an Anthropic (USA).
 */
 export default function DatenschutzPage() {
   const h2: React.CSSProperties = { fontSize: 16, fontWeight: 700, color: C.ink, margin: "26px 0 8px" };
@@ -23,7 +22,7 @@ export default function DatenschutzPage() {
 
       <h2 style={h2}>1. Verantwortlicher</h2>
       <p style={p}>Verantwortlich für die Datenverarbeitung auf dieser Plattform ist:</p>
-      <p style={p}>[VOR- UND NACHNAME / FIRMENNAME], [STRASSE], [PLZ ORT], [LAND]. E-Mail: [KONTAKT-E-MAIL].</p>
+      <p style={p}>Thies Malte Hofmann, Ravensburger Str. 67, 50739 Köln, Deutschland. E-Mail: kontakt@tom-marketing.de.</p>
 
       <h2 style={h2}>2. Welche Daten wir verarbeiten</h2>
       <p style={p}>Bei der Nutzung von Tom verarbeiten wir:</p>
@@ -45,18 +44,18 @@ export default function DatenschutzPage() {
       </ul>
 
       <h2 style={h2}>5. Übermittlung in Drittländer</h2>
-      <p style={p}>Die Verarbeitung der KI-Anfragen durch Anthropic kann eine Übermittlung in die USA umfassen. Diese erfolgt auf Grundlage geeigneter Garantien im Sinne der Art. 44 ff. DSGVO (insbesondere Standardvertragsklauseln der EU-Kommission). [Vor Veröffentlichung prüfen und ggf. anpassen, ob und in welchem Umfang eine Drittlandübermittlung stattfindet.]</p>
+      <p style={p}>Die Verarbeitung der KI-Anfragen durch Anthropic kann eine Übermittlung in die USA umfassen. Diese erfolgt auf Grundlage geeigneter Garantien im Sinne der Art. 44 ff. DSGVO (insbesondere Standardvertragsklauseln der EU-Kommission).</p>
 
       <h2 style={h2}>6. Speicherdauer</h2>
       <p style={p}>Wir speichern deine Daten, solange dein Konto besteht. Löschst du dein Konto oder einzelne Inhalte, werden die zugehörigen Daten entfernt, soweit keine gesetzlichen Aufbewahrungspflichten entgegenstehen.</p>
 
       <h2 style={h2}>7. Deine Rechte</h2>
-      <p style={p}>Dir stehen die Rechte auf Auskunft (Art. 15), Berichtigung (Art. 16), Löschung (Art. 17), Einschränkung der Verarbeitung (Art. 18), Datenübertragbarkeit (Art. 20) und Widerspruch (Art. 21 DSGVO) zu. Zudem hast du das Recht, dich bei einer Datenschutz-Aufsichtsbehörde zu beschweren. Wende dich für die Ausübung deiner Rechte an: [KONTAKT-E-MAIL].</p>
+      <p style={p}>Dir stehen die Rechte auf Auskunft (Art. 15), Berichtigung (Art. 16), Löschung (Art. 17), Einschränkung der Verarbeitung (Art. 18), Datenübertragbarkeit (Art. 20) und Widerspruch (Art. 21 DSGVO) zu. Zudem hast du das Recht, dich bei einer Datenschutz-Aufsichtsbehörde zu beschweren. Wende dich für die Ausübung deiner Rechte an: kontakt@tom-marketing.de.</p>
 
       <h2 style={h2}>8. Cookies</h2>
       <p style={p}>Wir verwenden ausschließlich technisch notwendige Cookies, die für Anmeldung und Sitzungsverwaltung erforderlich sind. Es findet kein Tracking zu Werbezwecken statt.</p>
 
-      <p style={{ ...p, marginTop: 24, fontSize: 12.5, color: C.faint }}>Stand: [DATUM]. Diese Erklärung wird bei Änderungen des Funktionsumfangs aktualisiert.</p>
+      <p style={{ ...p, marginTop: 24, fontSize: 12.5, color: C.faint }}>Stand: 23. Juli 2026. Diese Erklärung wird bei Änderungen des Funktionsumfangs aktualisiert.</p>
 
       <div style={{ marginTop: 32, display: "flex", gap: 16 }}>
         <Link href="/impressum" style={{ color: C.accent, fontSize: 13.5, fontWeight: 600 }}>Impressum</Link>
