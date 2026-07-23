@@ -21,14 +21,18 @@ export default function InsightPage() {
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
   const [sent, flashSent] = useFlash();
+  const [faktSchwelle, setFaktSchwelle] = useState(8);
 
   useEffect(() => { (async () => {
     setProfile(await storeGet<Profile>("mki:profile"));
     const s = await storeGet<StrategyM2>("mki:strategy"); if (s) setStrategy(s);
     const f = await storeGet<FeedItem[]>("mki:feed"); if (f) setFeed(f);
+    const th = await storeGet<number>("mki:faktschwelle"); if (typeof th === "number") setFaktSchwelle(th);
     const b = await storeGet<Brief[]>("mki:briefs"); if (b) setBriefs(b);
     const l = await storeGet<FeedItem[]>("mki:learnings"); if (l) setLearnings(l);
   })(); }, []);
+
+  async function changeSchwelle(v: number) { setFaktSchwelle(v); await storeSet("mki:faktschwelle", v); }
 
   async function ask(question?: string) {
     const query = (question ?? q).trim();
@@ -43,7 +47,7 @@ export default function InsightPage() {
       else {
         const stamped = items.map(it => {
           const score = blendScore(it.score, it.url);
-          const type: "Fakt" | "Signal" = score >= 8 ? "Fakt" : "Signal";
+          const type: "Fakt" | "Signal" = score >= faktSchwelle ? "Fakt" : "Signal";
           return { ...it, score, type, id: Date.now() + Math.random(), q: query };
         });
         const next = [...stamped, ...feed]; setFeed(next); await storeSet("mki:feed", next);
@@ -60,9 +64,14 @@ export default function InsightPage() {
   return (
     <div style={{ fontFamily: FONT, color: C.ink }}>
       <p style={{ margin: "0 0 12px", fontSize: 13.5, color: C.inkSoft }}>Jede Erkenntnis trägt sichtbar ihren Status und ihre Quellengüte.</p>
-      <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 18, fontSize: 12 }}>
-        <span style={{ background: C.faktBg, color: C.faktFg, padding: "4px 10px", borderRadius: 8 }}><b>Fakt</b> — belastbare Quelle (Güte ≥ 8)</span>
+      <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 12, fontSize: 12 }}>
+        <span style={{ background: C.faktBg, color: C.faktFg, padding: "4px 10px", borderRadius: 8 }}><b>Fakt</b> — belastbare Quelle (Güte ≥ {faktSchwelle})</span>
         <span style={{ background: C.signalBg, color: C.signalFg, padding: "4px 10px", borderRadius: 8 }}><b>Signal</b> — Hinweis, noch nicht gesichert</span>
+      </div>
+      <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 18, background: C.surface2, border: `1px solid ${C.line}`, borderRadius: 10, padding: "10px 14px" }}>
+        <span style={{ fontSize: 13, color: C.inkSoft, fontWeight: 600, whiteSpace: "nowrap" }}>Fakt ab Güte</span>
+        <input type="range" min={5} max={10} step={1} value={faktSchwelle} onChange={e => changeSchwelle(Number(e.target.value))} style={{ flex: 1, accentColor: C.accent }} />
+        <span style={{ fontSize: 15, fontWeight: 700, color: C.accentStrong, minWidth: 20, textAlign: "center" }}>{faktSchwelle}</span>
       </div>
       <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
         <input value={q} onChange={e => setQ(e.target.value)} onKeyDown={e => e.key === "Enter" && ask()} placeholder="Frag den Markt … z. B. Was machen meine Wettbewerber gerade?" style={{ flex: 1, padding: "12px 14px", borderRadius: 10, border: `1px solid ${C.line}`, fontSize: 14, fontFamily: FONT }} />
@@ -93,9 +102,10 @@ export default function InsightPage() {
 
       {feed.map(it => {
         const safeUrl = it.url ? sanitizeUrl(it.url) : "";
+        const kind: "Fakt" | "Signal" = (Number(it.score) || 0) >= faktSchwelle ? "Fakt" : "Signal";
         return (
-          <div key={it.id} style={{ background: C.card, border: `1px solid ${C.line}`, borderRadius: 14, padding: "14px 16px", marginBottom: 12, boxShadow: C.shadow }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 7 }}><Pill kind={it.type}>{it.type}</Pill><span style={{ fontSize: 12, color: C.inkSoft }}>{it.framework}</span></div>
+          <div key={it.id} style={{ background: C.card, border: `1px solid ${kind === "Fakt" ? C.faktFg : C.line}`, borderRadius: 14, padding: "14px 16px", marginBottom: 12, boxShadow: C.shadow }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 7 }}><Pill kind={kind}>{kind}</Pill><span style={{ fontSize: 12, color: C.inkSoft }}>{it.framework}</span></div>
             <div style={{ fontSize: 15, fontWeight: 600, lineHeight: 1.4 }}>{it.claim}</div>
             {it.why && <div style={{ fontSize: 13, color: C.inkSoft, marginTop: 6, lineHeight: 1.5 }}>{it.why}</div>}
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 10, borderTop: `1px solid ${C.line}`, paddingTop: 9 }}>

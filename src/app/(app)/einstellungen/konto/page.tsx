@@ -19,7 +19,7 @@ const TAGESLIMIT = 300;
 const ALL_KEYS = [
   "mki:profile", "mki:feed", "mki:briefs", "mki:strategy", "mki:strategybudget",
   "mki:contentplan", "mki:contenttone", "mki:campaign", "mki:performance",
-  "mki:learnings", "mki:round", "mki:rounds",
+  "mki:learnings", "mki:round", "mki:rounds", "mki:faktschwelle",
 ];
 
 const FIELDS: Array<{ key: keyof Profile; label: string; hint?: string }> = [

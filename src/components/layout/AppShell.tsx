@@ -25,7 +25,7 @@ const HEADS: Record<string, [string, string]> = {
 
 const CHAIN_KEY: Record<string, string> = { m1: "mki:feed", m2: "mki:strategy", m3: "mki:contentplan", m4: "mki:campaign", m5: "mki:performance" };
 const CHAIN_ORDER = ["m1", "m2", "m3", "m4", "m5"];
-const RESET_KEYS = ["mki:profile", "mki:feed", "mki:briefs", "mki:strategy", "mki:strategybudget", "mki:contentplan", "mki:contenttone", "mki:campaign", "mki:performance", "mki:learnings", "mki:round", "mki:rounds"];
+const RESET_KEYS = ["mki:profile", "mki:feed", "mki:briefs", "mki:strategy", "mki:strategybudget", "mki:contentplan", "mki:contenttone", "mki:campaign", "mki:performance", "mki:learnings", "mki:round", "mki:rounds", "mki:faktschwelle"];
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const router = useRouter();
