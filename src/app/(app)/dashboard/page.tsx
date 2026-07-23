@@ -4,6 +4,8 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { C, FONT } from "@/lib/tokens";
 import { storeGet, currentUserId } from "@/lib/store";
+import { getBrowserClient } from "@/lib/supabase/client";
+import { ADMIN_EMAIL } from "@/lib/adminEmail";
 import { MODULES } from "@/lib/profile";
 import { closeRound, getCurrentRound } from "@/lib/rounds";
 import { Spinner } from "@/components/ui/Basics";
@@ -48,7 +50,11 @@ export default function DashboardPage() {
       const uid = await currentUserId();
       if (!uid) { router.push("/auth/login?next=/dashboard"); return; }
       const p = await storeGet<Profile>("mki:profile");
-      if (!p) { router.push("/onboarding"); return; }
+      if (!p) {
+        const { data: { user } } = await getBrowserClient().auth.getUser();
+        if ((user?.email ?? "").toLowerCase() === ADMIN_EMAIL.toLowerCase()) { router.push("/admin"); return; }
+        router.push("/onboarding"); return;
+      }
       setProfile(p);
       const out: Record<string, boolean> = {};
       for (const f of FLOW) { const v = await storeGet(f.key); out[f.key] = !!(v && (Array.isArray(v) ? (v as unknown[]).length : true)); }
